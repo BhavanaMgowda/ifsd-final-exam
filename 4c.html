@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoo Animals Population</title>
+  <script src="https://unpkg.com/react/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone/babel.min.js" crossorigin></script>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Animal Component
+    const Animal = ({ animal }) => {
+      return (
+        <div>
+          <h3>{animal.name}</h3>
+          <p>Initial Population: {animal.initialPopulation}</p>
+          <p>Birth Rate: {animal.birthRate}</p>
+          <p>Death Rate: {animal.deathRate}</p>
+        </div>
+      );
+    };
+
+    // ZooAnimals Component
+    const ZooAnimals = () => {
+      const [numAnimals, setNumAnimals] = useState(0);
+      const [animals, setAnimals] = useState([]);
+      const [currentAnimalName, setCurrentAnimalName] = useState('');
+      const [currentInitialPopulation, setCurrentInitialPopulation] = useState(0);
+      const [currentBirthRate, setCurrentBirthRate] = useState(0);
+      const [currentDeathRate, setCurrentDeathRate] = useState(0);
+      const [years, setYears] = useState(0);
+
+      const handleNumAnimalsChange = (event) => {
+        const num = parseInt(event.target.value);
+        setNumAnimals(num);
+      };
+
+      const handleAnimalNameChange = (event) => {
+        setCurrentAnimalName(event.target.value);
+      };
+
+      const handleInitialPopulationChange = (event) => {
+        const population = parseInt(event.target.value);
+        setCurrentInitialPopulation(population);
+      };
+
+      const handleBirthRateChange = (event) => {
+        const rate = parseFloat(event.target.value);
+        setCurrentBirthRate(rate);
+      };
+
+      const handleDeathRateChange = (event) => {
+        const rate = parseFloat(event.target.value);
+        setCurrentDeathRate(rate);
+      };
+
+      const handleYearsChange = (event) => {
+        const numYears = parseInt(event.target.value);
+        setYears(numYears);
+      };
+
+      const handleAddAnimal = () => {
+        if (
+          currentAnimalName.trim() === '' ||
+          isNaN(currentInitialPopulation) ||
+          isNaN(currentBirthRate) ||
+          isNaN(currentDeathRate) ||
+          currentInitialPopulation < 0 ||
+          currentBirthRate < 0 ||
+          currentDeathRate < 0
+        ) {
+          return;
+        }
+
+        const animal = {
+          name: currentAnimalName,
+          initialPopulation: currentInitialPopulation,
+          birthRate: currentBirthRate,
+          deathRate: currentDeathRate,
+        };
+        setAnimals([...animals, animal]);
+
+        setCurrentAnimalName('');
+        setCurrentInitialPopulation(0);
+        setCurrentBirthRate(0);
+        setCurrentDeathRate(0);
+      };
+
+      const handleDeleteAnimal = (index) => {
+        const updatedAnimals = [...animals];
+        updatedAnimals.splice(index, 1);
+        setAnimals(updatedAnimals);
+      };
+
+      const calculatePopulationAfterYears = (animal) => {
+        let population = animal.initialPopulation;
+        for (let i = 0; i < years; i++) {
+          const birthCount = animal.birthRate * population;
+          const deathCount = animal.deathRate * population;
+          const netGrowth = birthCount - deathCount;
+          population += netGrowth;
+        }
+        return population;
+      };
+
+      return (
+        <div>
+          <h2>Zoo Animals Population</h2>
+          <label htmlFor="numAnimals">Number of Animals:</label>
+          <input
+            type="number"
+            id="numAnimals"
+            value={numAnimals}
+            onChange={handleNumAnimalsChange}
+          />
+
+          {Array.from({ length: numAnimals }).map((_, index) => (
+            <div key={index}>
+              <h3>Animal {index + 1}</h3>
+              <label htmlFor={`animalName${index}`}>Animal Name:</label>
+              <input
+                type="text"
+                id={`animalName${index}`}
+                value={currentAnimalName}
+                onChange={handleAnimalNameChange}
+              />
+
+              <label htmlFor={`initialPopulation${index}`}>Initial Population:</label>
+              <input
+                type="number"
+                id={`initialPopulation${index}`}
+                value={currentInitialPopulation}
+                onChange={handleInitialPopulationChange}
+              />
+
+              <label htmlFor={`birthRate${index}`}>Birth Rate:</label>
+              <input
+                type="number"
+                step="0.01"
+                id={`birthRate${index}`}
+                value={currentBirthRate}
+                onChange={handleBirthRateChange}
+              />
+
+              <label htmlFor={`deathRate${index}`}>Death Rate:</label>
+              <input
+                type="number"
+                step="0.01"
+                id={`deathRate${index}`}
+                value={currentDeathRate}
+                onChange={handleDeathRateChange}
+              />
+
+              <button onClick={handleAddAnimal}>Add Animal</button>
+            </div>
+          ))}
+
+          <h3>All Animals:</h3>
+          {animals.map((animal, index) => (
+            <div key={index}>
+              <Animal animal={animal} />
+              <button onClick={() => handleDeleteAnimal(index)}>Delete Animal</button>
+            </div>
+          ))}
+
+          <h3>Calculate Population After Years:</h3>
+          <div>
+            <label htmlFor="selectedAnimal">Select Animal:</label>
+            <select
+              id="selectedAnimal"
+              value={years}
+              onChange={handleYearsChange}
+            >
+              <option value="">Select Animal</option>
+              {animals.map((animal, index) => (
+                <option key={index} value={animal}>
+                  {animal.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="years">Years:</label>
+            <input
+              type="number"
+              id="years"
+              value={years}
+              onChange={handleYearsChange}
+            />
+          </div>
+          <button onClick={calculatePopulationAfterYears}>Calculate Population</button>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<ZooAnimals />, document.getElementById('root'));
+  </script>
+</body>
+
+</html>
